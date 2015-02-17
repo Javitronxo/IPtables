@@ -11,8 +11,10 @@ Services and ports I will use for my personal firewall:
 * IMAP: 993
 * Webmin: 10000 (I like to use this program sometimes...)
 
-## Instructions to use:
+## Instructions to use: As root user
+
 Execute the script
-* sudo ./web_firewall.sh
+* ./web_firewall.sh
+
 Check the rules afterwards
-* sudo iptables -L
+* iptables -L
