@@ -46,8 +46,17 @@ iptables -A OUTPUT -o eth0 -p tcp --sport 465 -m state --state ESTABLISHED -j AC
 #Allow IMAP and IMAPS
 iptables -A INPUT -i eth0 -p tcp --dport 143 -m state --state NEW,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o eth0 -p tcp --sport 143 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 993 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEPT
+
+#Allow POP and POPS
+iptables -A INPUT -i eth0 -p tcp --dport 110 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp --sport 110 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 995 -m state --state NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp --sport 995 -m state --state ESTABLISHED -j ACCEPT
 
 #Allow Webmin Web GUI only from your LAN
+#Webmin is a web-based interface for system administration for Unix.
 iptables -A INPUT -i eth0 -p tcp -s 192.168.1.0/24  --dport 10000 -m state --state NEW,ESTABLISHED -j ACCEPT
 iptables -A OUTPUT -o eth0 -p tcp --sport 10000 -m state --state ESTABLISHED -j ACCEPT
 
