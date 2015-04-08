@@ -13,11 +13,11 @@ In order to make it as safer as possible, the default policy for the firewall is
 * HTTPS: 443
 * SMTP: 25
 * SMTP over SSH: 465
+* SMTP/STARTTLS: 587
 * IMAP: 143
 * IMAP: 993
 * POP: 110
 * POPS: 995
-* Webmin: 10000 (Webmin is a web-based interface for system administration for Unix.)
 
 ## Instructions to use: As root user
 
@@ -30,30 +30,29 @@ Output example:
 
 	Chain INPUT (policy DROP)
 	target     prot opt source               destination
-	ACCEPT     all  --  anywhere             anywhere
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:ssh state NEW,ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:http state NEW,ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:https state NEW,ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:smtp state NEW,ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:ssmtp state NEW,ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:imap2 state NEW,ESTABLISHED
-	ACCEPT     tcp  --  192.168.1.0/24       anywhere             tcp dpt:webmin state NEW,ESTABLISHED
+	REJECT     all  --  anywhere             loopback/8           reject-with icmp-port-unreachable
+	ACCEPT     all  --  anywhere             anywhere             state RELATED,ESTABLISHED
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:http
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:https
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:smtp
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:ssmtp
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:submission
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:pop3
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:pop3s
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:imap2
+	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:imaps
+	ACCEPT     tcp  --  anywhere             anywhere             state NEW tcp dpt:ssh
 	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:http limit: avg 25/min burst 100
 	ACCEPT     tcp  --  anywhere             anywhere             tcp dpt:433 limit: avg 25/min burst 100
+	LOG        all  --  anywhere             anywhere             limit: avg 5/min burst 5 LOG level debug prefix "iptables denied: "
 
 	Chain FORWARD (policy DROP)
 	target     prot opt source               destination
+	DROP       all  --  anywhere             anywhere
 
-	Chain OUTPUT (policy DROP)
+	Chain OUTPUT (policy ACCEPT)
 	target     prot opt source               destination
 	ACCEPT     all  --  anywhere             anywhere
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:ssh state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:http state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:https state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:smtp state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:ssmtp state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:imap2 state ESTABLISHED
-	ACCEPT     tcp  --  anywhere             anywhere             tcp spt:webmin state ESTABLISHED
 
 ## Other security considerations:
 
@@ -61,4 +60,4 @@ Since our machine will act always as server and not as client, we can improve th
 
 IPtables includes the option --state option, which allows access to the connection tracking state for this packet, only the states defined will be matched by the rule.
 
-To make the most of this option, the incoming packets must be marked as NEW (connection) or ESTABLISHED (connection), and the outcoming packets as ESTABLISHED. This way the firewall will be able to prevent the packets that violate the TCP specification.
+To make the most of this option, the incoming packets must be marked as NEW (connection) or ESTABLISHED (connection). This way the firewall will be able to prevent the packets that violate the TCP specification.
