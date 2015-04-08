@@ -19,7 +19,7 @@ iptables -t nat -F
 echo "Default policy: DROP"
 #Set default policy: DROP
 iptables -P INPUT DROP
-iptables -P OUTPUT DROP
+iptables -P OUTPUT ACCEPT
 iptables -P FORWARD DROP
 
 echo "Applying rules.."
@@ -27,43 +27,34 @@ echo "Applying rules.."
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A OUTPUT -o lo -j ACCEPT
 
+# Accept all established inbound connections
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+
 #Allow incoming SSH
-iptables -A INPUT -i eth0 -p tcp --dport 22 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 22 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp -m state --state NEW --dport 22 -j ACCEPT
 
 #Allow incoming HTTP and HTTPS
-iptables -A INPUT -i eth0 -p tcp --dport 80 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 80 -m state --state ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --dport 443 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 443 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
 
 #Allow SMTP and SMTP_SSL
-iptables -A INPUT -i eth0 -p tcp --dport 25 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 25 -m state --state ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --dport 465 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 465 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 25 -m state -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 465 -m state -j ACCEPT
+iptables -A INPUT -p tcp --dport 587 -j ACCEPT
 
 #Allow IMAP and IMAPS
-iptables -A INPUT -i eth0 -p tcp --dport 143 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 143 -m state --state ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --dport 993 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 993 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 143 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 993 -j ACCEPT
 
 #Allow POP and POPS
-iptables -A INPUT -i eth0 -p tcp --dport 110 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 110 -m state --state ESTABLISHED -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --dport 995 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 995 -m state --state ESTABLISHED -j ACCEPT
-
-#Allow Webmin Web GUI only from your LAN
-#Webmin is a web-based interface for system administration for Unix.
-iptables -A INPUT -i eth0 -p tcp -s 192.168.1.0/24  --dport 10000 -m state --state NEW,ESTABLISHED -j ACCEPT
-iptables -A OUTPUT -o eth0 -p tcp --sport 10000 -m state --state ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 110 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 995 -j ACCEPT
 
 #Prevent DoS Attack
 iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 iptables -A INPUT -p tcp --dport 433 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 
+# Log iptables denied calls
+-A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+
 echo "Done."
-echo "Check your tables typing:"
-echo "  $ sudo iptables -L"
