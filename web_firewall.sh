@@ -38,9 +38,9 @@ iptables -A INPUT -i eth0 -p tcp --dport 80 -j ACCEPT
 iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
 
 #Allow SMTP and SMTP_SSL
-iptables -A INPUT -i eth0 -p tcp --dport 25 -m state -j ACCEPT
-iptables -A INPUT -i eth0 -p tcp --dport 465 -m state -j ACCEPT
-iptables -A INPUT -p tcp --dport 587 -j ACCEPT
+sudo iptables -A INPUT -i eth0 -p tcp --dport 25 -j ACCEPT
+sudo iptables -A INPUT -i eth0 -p tcp --dport 465 -j ACCEPT
+sudo iptables -A INPUT -i eth0 -p tcp --dport 587 -j ACCEPT
 
 #Allow IMAP and IMAPS
 iptables -A INPUT -i eth0 -p tcp --dport 143 -j ACCEPT
@@ -55,6 +55,6 @@ iptables -A INPUT -p tcp --dport 80 -m limit --limit 25/minute --limit-burst 100
 iptables -A INPUT -p tcp --dport 433 -m limit --limit 25/minute --limit-burst 100 -j ACCEPT
 
 # Log iptables denied calls
--A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
+iptables -A INPUT -m limit --limit 5/min -j LOG --log-prefix "iptables denied: " --log-level 7
 
 echo "Done."
