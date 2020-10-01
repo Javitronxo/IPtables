@@ -38,9 +38,9 @@ iptables -A INPUT -i eth0 -p tcp --dport 80 -j ACCEPT
 iptables -A INPUT -i eth0 -p tcp --dport 443 -j ACCEPT
 
 #Allow SMTP and SMTP_SSL
-sudo iptables -A INPUT -i eth0 -p tcp --dport 25 -j ACCEPT
-sudo iptables -A INPUT -i eth0 -p tcp --dport 465 -j ACCEPT
-sudo iptables -A INPUT -i eth0 -p tcp --dport 587 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 25 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 465 -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --dport 587 -j ACCEPT
 
 #Allow IMAP and IMAPS
 iptables -A INPUT -i eth0 -p tcp --dport 143 -j ACCEPT
